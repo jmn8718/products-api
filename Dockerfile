@@ -1,6 +1,6 @@
 FROM node:8.1.3-slim
 
-RUN npm install -g swagger concurrently
+RUN npm install -g swagger
 
 COPY ./package.json /app/package.json
 COPY ./package-lock.json /app/package-lock.json

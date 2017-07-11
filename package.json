@@ -12,13 +12,21 @@
   "main": "app.js",
   "dependencies": {
     "express": "^4.12.3",
+    "pg": "^6.4.0",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.3.1",
     "swagger-express-mw": "^0.1.0"
   },
   "devDependencies": {
+    "sequelize-cli": "^2.7.0",
     "should": "^7.1.0",
     "supertest": "^1.0.0"
   },
   "scripts": {
+    "premigrate": "./node_modules/sequelize-cli/bin/sequelize db:migrate:undo:all",
+    "migrate": "./node_modules/sequelize-cli/bin/sequelize db:migrate",
+    "preseed": "./node_modules/sequelize-cli/bin/sequelize db:seed:undo:all",
+    "seed": "./node_modules/sequelize-cli/bin/sequelize db:seed:all",
     "dev": "concurrently \"swagger project start\" \"swagger project edit\"",
     "start": "node app.js",
     "test": "swagger project test"

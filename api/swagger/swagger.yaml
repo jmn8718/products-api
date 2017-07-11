@@ -135,6 +135,8 @@ definitions:
       ean:
         type: string
   ProductResponse:
+    required:
+      - id
     properties:
       id:
         type: number
@@ -143,6 +145,9 @@ definitions:
       ean:
         type: string
   ProductsResponse:
+    required:
+      - count
+      - data
     properties:
       count:
         type: number

@@ -1,5 +1,13 @@
 version: '3'
 services:
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_DB=products
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=dev
+    networks:
+      - products
   server:
     build: .
     ports:
@@ -14,7 +22,12 @@ services:
       - /app/node_modules
       - ./config:/app/config
       - ./api:/app/api
-      - ./test:/app/test
+      - ./db:/app/db
       - ./app.js:/app/app.js
-      - ./package.json:/app/package.json
-      - ./package-lock.json:/app/package-lock.json
+    depends_on:
+      - db
+    networks:
+      - products
+
+networks:
+  products:
