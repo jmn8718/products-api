@@ -74,8 +74,28 @@ paths:
             $ref: "#/definitions/ErrorResponse"
   /products/{productId}:
     x-swagger-router-controller: products
+    get:
+      description: Get a 'Product'
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          description: The id of the products
+          required: true
+          type: number
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ProductResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
     put:
-      description: Return 'Products'
+      description: Update a 'Product'
       operationId: updateProduct
       parameters:
         - name: productId
@@ -102,7 +122,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
     delete:
-      description: Return 'Products'
+      description: Delete a 'Product'
       operationId: deleteProduct
       parameters:
         - name: productId
@@ -129,10 +149,16 @@ definitions:
     required:
       - name
       - ean
+      - brand
+      - model
     properties:
       name:
         type: string
       ean:
+        type: string
+      brand:
+        type: string
+      model:
         type: string
   ProductResponse:
     required:
@@ -143,6 +169,10 @@ definitions:
       name:
         type: string
       ean:
+        type: string
+      brand:
+        type: string
+      model:
         type: string
   ProductsResponse:
     required:

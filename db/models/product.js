@@ -3,15 +3,19 @@ module.exports = function(sequelize, DataTypes) {
   const Product = sequelize.define('Product', {
     name: {
       allowNull: false,
-      type: Sequelize.STRING
+      type: DataTypes.STRING
     },
     ean: {
       allowNull: false,
-      type: Sequelize.STRING
+      type: DataTypes.STRING
     },
     model: {
       allowNull: false,
-      type: Sequelize.STRING
+      type: DataTypes.STRING
+    },
+    brand: {
+      allowNull: false,
+      type: DataTypes.STRING
     },
   });
 

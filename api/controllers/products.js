@@ -1,70 +1,132 @@
 'use strict';
 
-const data = [
-  { id: 1, name: 'Samsung', ean: '998485456454' },
-  { id: 2, name: 'Samsung', ean: '345356475857' },
-  { id: 3, name: 'LG', ean: '345345343534' },
-  { id: 4, name: 'Sony', ean: '867874645' },
-  { id: 5, name: 'Apple', ean: '32445564' },
-  { id: 6, name: 'LG', ean: 'dasdasd4324' },
-];
-
-let id = data.length;
-
-const extractData = (search = '', limit = 0, skip = 0) => {
-  const filteredData = !search ? data : data.filter((product) => product.name.indexOf(search) > -1 || product.ean.indexOf(search) > -1);
-  return filteredData.slice(skip, limit > 0 ? limit : filteredData.length);
-}
+const Product = require('../../db/models').Product;
 
 const getProducts = (req, res) => {
   const { search, limit, skip } = req.swagger.params;
-  const products = extractData(search.value, limit.value, skip.value);
-  res.json({
-    count: products.length,
-    data: products,
-  });
+  const query = {};
+  if (limit.value) {
+    query.limit = args.limit.value;
+  }
+  if (skip.value) {
+    query.offset = args.skip.value;
+  }
+  if (search.value) {
+    query.where = {
+      $or: [
+        { name: { $like: `%${search.value}%` }},
+        { ean: { $like: `%${search.value}%` }},
+        { model: { $like: `%${search.value}%` }},
+        { brand: { $like: `%${search.value}%` }},
+      ],
+    };
+  }
+
+  Product.findAndCountAll(query)
+    .then((result) => res.json({
+      count: result.count,
+      data: result.rows,
+    }))
+    .catch((err) => {
+      console.log(err)
+      res.status(err.statusCode || 400).json({
+        message: err.message,
+      });
+    });
+}
+
+const getProduct = (req, res) => {
+  const id = req.swagger.params.productId.value;
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        const error = new Error('Not found');
+        error.status = 404;
+        throw error;
+      }
+      return product;
+    })
+    .then((product) => res.json(product))
+    .catch((err) => {
+      console.log(err)
+      res.status(err.statusCode || 400).json({
+        message: err.message,
+      });
+    });
 }
 
 const createProduct = (req, res) => {
-  const value = req.swagger.params.data.value;
-  const newProduct = {
-    id: ++id,
-    name: value.name,
-    ean: value.ean,
-  };
+  const data = req.swagger.params.data.value;
 
-  data.push(newProduct);
-  res.status(201).json(newProduct);
+  Product.create(data)
+    .then((product) => res.status(201).json(product))
+    .catch((err) => {
+      console.log(err)
+      res.status(err.statusCode || 400).json({
+        message: err.message,
+      });
+    });
 }
 
 const updateProduct = (req, res) => {
   const id = req.swagger.params.productId.value;
-  const value = req.swagger.params.data.value;
+  const data = req.swagger.params.data.value;
+  let productToUpdate;
 
-  const index = data.findIndex((product) => product.id === id);
-  if (index === -1) {
-    return res.status(404).json({ message: "Not Found" });
-  }
-
-  data[index].name = value.name;
-  data[index].ean = value.ean;
-
-  res.json(data[index]);
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        const error = new Error('Not found');
+        error.status = 404;
+        throw error;
+      }
+      return product.update(data , {
+        fields: [
+          'name',
+          'model',
+          'description',
+          'brand',
+          'ean',
+          'image',
+        ],
+      });
+    })
+    .then(() => Product.findById(id))
+    .then((product) => res.json(product))
+    .catch((err) => {
+      console.log(err)
+      res.status(err.statusCode || 400).json({
+        message: err.message,
+      });
+    });
 }
 
 const deleteProduct = (req, res) => {
   const id = req.swagger.params.productId.value;
-  const index = data.findIndex((product) => product.id === id);
-  if (index === -1) {
-    return res.status(404).json({ message: "Not Found" });
-  }
+  let productToDelete;
 
-  const productsDeleted = data.splice(index, 1);
-  res.json(productsDeleted[0]);
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        const error = new Error('Not found');
+        error.status = 404;
+        throw error;
+      }
+      productToDelete = product;
+      return product.destroy();
+    })
+    .then(() => res.json(productToDelete))
+    .catch((err) => {
+      console.log(err)
+      res.status(err.statusCode || 400).json({
+        message: err.message,
+      });
+    });
 }
 
 module.exports = {
   getProducts,
+  getProduct,
   createProduct,
   updateProduct,
   deleteProduct,
