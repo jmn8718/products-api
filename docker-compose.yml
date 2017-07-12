@@ -14,6 +14,7 @@ services:
       - 5000:5000
     environment:
       - PORT=5000
+      - JWT_SECRET=products
     entrypoint:
       - swagger
       - project
@@ -21,6 +22,7 @@ services:
     volumes:
       - /app/node_modules
       - ./config:/app/config
+      - ./middleware:/app/middleware
       - ./api:/app/api
       - ./db:/app/db
       - ./app.js:/app/app.js

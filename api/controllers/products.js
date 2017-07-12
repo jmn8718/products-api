@@ -2,6 +2,16 @@
 
 const Product = require('../../db/models').Product;
 
+const findProductFormDb = (id) => Product.findById(id)
+  .then((product) => {
+    if (!product) {
+      const error = new Error('Not found');
+      error.status = 404;
+      throw error;
+    }
+    return product;
+  });
+
 const getProducts = (req, res) => {
   const { search, limit, skip } = req.swagger.params;
   const query = {};
@@ -37,15 +47,7 @@ const getProducts = (req, res) => {
 
 const getProduct = (req, res) => {
   const id = req.swagger.params.productId.value;
-  Product.findById(id)
-    .then((product) => {
-      if (!product) {
-        const error = new Error('Not found');
-        error.status = 404;
-        throw error;
-      }
-      return product;
-    })
+  findProductFormDb(id)
     .then((product) => res.json(product))
     .catch((err) => {
       console.log(err)
@@ -71,27 +73,19 @@ const createProduct = (req, res) => {
 const updateProduct = (req, res) => {
   const id = req.swagger.params.productId.value;
   const data = req.swagger.params.data.value;
-  let productToUpdate;
 
-  Product.findById(id)
-    .then((product) => {
-      if (!product) {
-        const error = new Error('Not found');
-        error.status = 404;
-        throw error;
-      }
-      return product.update(data , {
-        fields: [
-          'name',
-          'model',
-          'description',
-          'brand',
-          'ean',
-          'image',
-        ],
-      });
-    })
-    .then(() => Product.findById(id))
+  findProductFormDb(id)
+    .then((product) => product.update(data , {
+      fields: [
+        'name',
+        'model',
+        'description',
+        'brand',
+        'ean',
+        'image',
+      ],
+    }))
+    .then(() => findProductFormDb(id))
     .then((product) => res.json(product))
     .catch((err) => {
       console.log(err)
@@ -105,13 +99,8 @@ const deleteProduct = (req, res) => {
   const id = req.swagger.params.productId.value;
   let productToDelete;
 
-  Product.findById(id)
+  findProductFormDb(id)
     .then((product) => {
-      if (!product) {
-        const error = new Error('Not found');
-        error.status = 404;
-        throw error;
-      }
       productToDelete = product;
       return product.destroy();
     })

@@ -2,9 +2,15 @@
 
 const SwaggerExpress = require('swagger-express-mw');
 const app = require('express')();
+const passport = require('passport');
+const { authMiddleware } = require('./middleware');
+
 module.exports = app; // for testing
 
+authMiddleware.applyAuthMiddleware(app);
+
 const config = {
+  swaggerSecurityHandlers: authMiddleware.swaggerSecurityHandlers,
   appRoot: __dirname // required config
 };
 
